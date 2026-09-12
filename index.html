@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JUMBO.RU — Top-Down Survival Shooter</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <canvas id="game"></canvas>
+
+  <div id="hud" class="hidden">
+    <div id="hud-left">
+      <div class="stat"><span class="label">HP</span><div id="hpbar"><div id="hpfill"></div></div><span id="hpnum">100</span></div>
+      <div class="stat surv"><span id="sf-hp" class="label">❤</span><span id="sf-hpnum" class="num">100</span></div>
+      <div class="stat surv"><span id="sf-thirst" class="label">💧</span><div id="thirstbar"><div id="thirstfill"></div></div><span id="sf-thirstnum" class="num">100</span></div>
+      <div class="stat surv"><span id="sf-food" class="label">🍊</span><div id="foodbar"><div id="foodfill"></div></div><span id="sf-foodnum" class="num">100</span></div>
+      <div class="stat surv"><span id="sf-rad" class="label">☢</span><div id="radbar"><div id="radfill"></div></div><span id="sf-radnum" class="num">0</span></div>
+      <div class="stat"><span class="label">TIME</span><span id="timenum" class="num">0:00</span></div>
+      <div class="stat"><span class="label">KILLS</span><span id="killnum" class="num">0</span></div>
+    </div>
+
+    <div id="guide">
+      <div id="guide-head">CONTROLS<button id="guide-close" title="Hide (H)">✕</button></div>
+      <div id="guide-grid">
+        <span><b>WASD</b> move</span>
+        <span><b>Mouse</b> aim</span>
+        <span><b>LMB</b> shoot</span>
+        <span><b>RMB</b> grenade</span>
+        <span><b>R</b> reload</span>
+        <span><b>E</b> interact</span>
+        <span><b>Q</b> inventory</span>
+        <span><b>F</b> build</span>
+      </div>
+    </div>
+
+    <div id="hud-right">
+      <div id="zoneid" class="hidden"></div>
+      <div id="ammobox"><span id="ammonum">6</span><span class="label">/ 6</span></div>
+      <div id="reloadtip" class="hidden">RELOADING…</div>
+      <button id="spawnbtn" title="Teleport back to spawn in 5s">SPAWN</button>
+    </div>
+    <div id="volhint" class="hidden"><span id="volicon">♪</span><b id="volnum">50</b></div>
+    <div id="bossbar-wrap" class="hidden">
+      <span class="label">BOSS</span>
+      <div id="bossbar"><div id="bossfill"></div></div>
+    </div>
+    <div id="carhint" class="hidden"></div>
+    <div id="pickuphint" class="hidden"></div>
+    <div id="buildhint" class="hidden"></div>
+
+    <div id="shopwrap" class="hidden">
+      <button id="shop-x" title="Close (ESC)">✕</button>
+      <div id="shop-trader">
+        <img id="shop-trader-img" alt="Trader">
+        <div id="shop-trader-name">TRADER</div>
+      </div>
+      <div id="shoppanel">
+        <div id="shop-tabs">
+          <button class="shop-tab active" data-tab="buy">BUY</button>
+          <button class="shop-tab" data-tab="sell">SELL</button>
+          <button class="shop-tab" data-tab="trade">TRADE</button>
+        </div>
+        <div id="shop-body">
+          <p class="shop-empty">Nothing here yet.<br>Trade opens later.</p>
+        </div>
+      </div>
+      <div id="shop-close">E or ESC — exit</div>
+    </div>
+
+    <div id="invwrap" class="hidden">
+      <div id="invskin">
+        <div id="invskinlabel">CHARACTER</div>
+        <canvas id="inv-skin-canvas"></canvas>
+      </div>
+      <div id="invslots"></div>
+      <div id="invtip">TAB or Q — close · click supplies to use</div>
+    </div>
+  </div>
+
+  <div id="menu" class="overlay">
+    <div class="panel">
+      <h1>JUMBO<span>.RU</span></h1>
+      <p class="sub">top-down survival shooter</p>
+      <ul class="help">
+        <li><b>WASD</b> — move</li>
+        <li><b>Mouse</b> — aim</li>
+        <li><b>LMB</b> — shoot</li>
+        <li><b>RMB</b> — throw grenade</li>
+        <li><b>R</b> — reload</li>
+        <li><b>E</b> — enter car / door / pick up supplies / shop</li>
+        <li><b>Q / TAB</b> — inventory (eat / drink)</li>
+        <li><b>F</b> — build mode: walls, doors</li>
+        <li><b>SPAWN</b> — teleport to home base</li>
+        <li><b>ESC</b> — pause &amp; settings</li>
+        <li><b>M</b> — sound on/off</li>
+        <li><b>- / +</b> — volume</li>
+      </ul>
+      <button id="startbtn">START RAID</button>
+      <p class="hint">Open world without waves — enemies roam freely. Build walls and survive.</p>
+    </div>
+  </div>
+
+  <div id="gameover" class="overlay hidden">
+    <div class="panel">
+      <h1 class="go">YOU DIED</h1>
+      <p class="sub">respawn on home base…</p>
+      <div id="go-stats">
+        <div><span>Kills</span><b id="go-kills">0</b></div>
+        <div><span>Time</span><b id="go-time">0:00</b></div>
+      </div>
+      <button id="restartbtn">RESTART</button>
+    </div>
+  </div>
+
+  <div id="pause" class="overlay hidden">
+    <div class="panel small">
+      <h1>PAUSE</h1>
+      <div class="volrow">
+        <span class="vl">VOLUME</span>
+        <button id="pvol-minus" title="Quieter">−</button>
+        <b id="pvol-num">50</b>
+        <button id="pvol-plus" title="Louder">+</button>
+      </div>
+      <div class="volrow">
+        <button id="pmute">SOUND ON</button>
+        <button id="presume">CONTINUE</button>
+      </div>
+      <p>ESC — continue</p>
+    </div>
+  </div>
+
+  <div id="loading" class="overlay">
+    <div class="panel small">
+      <h1>LOADING…</h1>
+    </div>
+  </div>
+
+  <script src="js/utils.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/assets.js"></script>
+  <script src="js/effects.js"></script>
+  <script src="js/player.js"></script>
+  <script src="js/enemy.js"></script>
+  <script src="js/buildings.js"></script>
+  <script src="js/vehicle.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
